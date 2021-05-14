@@ -81,7 +81,14 @@ class Blockchain {
 
                     self.chain.push(block);
                     self.height = block.height;
-                    resolve(block);
+                    self.validateChain().then(errors => {
+                       if(errors.length > 0){
+                           reject(Error('Chain is invalid'));
+                           return;
+                       } else {
+                           resolve(block);
+                       }
+                    });
                   });
               });
           } catch (e) {
@@ -131,6 +138,9 @@ class Blockchain {
             bitcoinMessage.verify(message, address, signature);
             var block = new BlockClass.Block({ address, message, signature, star });
             self._addBlock(block).then(b => resolve(b));
+          } else {
+            reject(Error('Time elapsed!'))
+            return;
           }
         });
     }
@@ -182,7 +192,7 @@ class Blockchain {
         return new Promise((resolve, reject) => {
           self.chain.filter(b => b.height >= 1).map(b => b.getBData().then(data => {
               if(data.address == address){
-                stars.push(data.star);
+                stars.push({ star: data.star, owner: address });
               }
             }));
           resolve(stars);
