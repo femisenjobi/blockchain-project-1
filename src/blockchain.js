@@ -211,7 +211,10 @@ class Blockchain {
             });
           });
         };
-
+        if(self.height < 0){
+          resolve(errorLog);
+          return;
+        }
         self.getBlockByHeight(self.height).then(block => {
           block.validate().then(isvalid => {
             if(!isvalid){
